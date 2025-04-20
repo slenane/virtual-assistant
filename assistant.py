@@ -1,44 +1,62 @@
-import speech_recognition as sr
-import pyttsx3
+import os
+from dotenv import load_dotenv
+import requests
+from datetime import datetime
 
-# Initialize the recognize and the TTS engine
-recognizer = sr.Recognizer()
-engine = pyttsx3.init()
+# Load environment variables
+load_dotenv()
 
-def speak(text): 
-    engine.say(text)
-    engine.runAndWait()
+# OpenWeatherMap API Key
+API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
-def listen():
-    with sr.Microphone() as source:
-        print("🎤 Listening...")
-        audio = recognizer.listen(source)
-        try: 
-            command = recognizer.recognize_google(audio)
-            print(f"You said: {command}")
-            return command.lower()
-        except sr.UnknownValueError:
-            speak("Sorry, I didn't catch that.")
-            return ""
-        except sr.RequestError:
-            speak("Sorry, I'm having trouble connecting to the internet")
-            return ''
+def get_weather(city):
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+
+    try:
+        response = requests.get(url)
+        data = response.json()
+
+        if data['cod'] != 200:
+            return f"Sorry, I could not find weather for '{city}'."
         
-def main():
-    speak("Hello! How can I help you?")
-    while True:
-        command  = listen()
-        if "hello" in command:
-            speak("Hi there!")
-        elif "time" in command:
-            from datetime import datetime
-            now = datetime.now().strftime("%H:%M")
-            speak(f'The time is {now}')
-        elif "stop" in command or "bye" in command:
-            speak("Goodbye!")
-            break
+        weather = data["weather"][0]["description"]
+        temp = data["main"]["temp"]
+        feels_like = data["main"]["feels_like"]
+
+        return f"In {city.title()}, it's currently {weather} with a temperature of {temp}°C (feels like {feels_like}°C)."
+    except Exception as e:
+        return f"Something wen wrong: {e}"
+
+
+def get_response(command):
+    command = command.lower()
+    
+    if "hello" in command:
+        return "Hi there! How can I help you?"
+    elif "time" in command:
+        now = datetime.now().strftime("%H:%M")
+        return f"The time is {now}."
+    elif "weather in" in command:
+        city = command.split("weather in")[-1].strip()
+        if city:
+            return get_weather(city)
         else:
-            speak("I'm not sure how to help with that.")
+            return "Please specify a city."
+    elif command in ["bye", "exit", "quit"]:
+        return "Goodbye! Have a great day!"
+    else:
+        return "I'm not sure how to respond to that."
+
+def main():
+    print("👋 Hello! I'm your assistant. Type something:")
+    
+    while True:
+        user_input = input("> ")
+        response = get_response(user_input)
+        print(response)
+        
+        if response.startswith("Goodbye"):
+            break
 
 if __name__ == "__main__":
     main()

@@ -5,12 +5,21 @@ from datetime import datetime
 import dateparser
 import re
 import argparse
+import ollama
 
 # Load environment variables
 load_dotenv()
 
 # OpenWeatherMap API Key
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
+
+def ask_llm_local(prompt, history=[]):
+    response = ollama.chat(
+        model='llama3',
+        messages=history + [{'role': "user", "content": prompt}]
+    )
+    answer = response['message']['content']
+    return answer, history + [{"role": "assistant", "content": answer}]
 
 def get_weather(city):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
@@ -97,21 +106,17 @@ def load_city_preference():
         return ""
         
 
-def get_response(command):
+def handle_custom_commands(command):
     command = command.lower()
     
-    if "hello" in command:
-        return "Hi there! How can I help you?"
-    elif "time" in command:
-        now = datetime.now().strftime("%H:%M")
-        return f"The time is {now}."
-    elif "weather in" in command:
+    if "weather in" in command:
         city = command.split("weather in")[-1].strip()
         if city:
             return get_weather(city)
         else:
             return "Please specify a city."
-    elif command.lower().startswith("add "):
+        
+    elif command.lower().startswith("add ") and "todo list" in command.lower():
         match = re.match(r"add (.+) to my todo list(?: for (.+))?", command.lower())
 
         if match:
@@ -120,12 +125,12 @@ def get_response(command):
             return add_to_todo(task, date_str)
         else:
             return "Sorry, I couldn't understand that task"
+        
     elif "what's on my todo list" in command.lower() or "show my todo list" in command.lower():
         return get_todays_todo()
-    elif command in ["bye", "exit", "quit"]:
-        return "Goodbye! Have a great day!"
-    else:
-        return "I'm not sure how to respond to that."
+    
+    # Fallback - trigger LLM chat
+    return None
     
 
 def print_help():
@@ -159,15 +164,23 @@ def main():
 
     get_daily_briefing(city)
 
-    print("👋 Hello! I'm your assistant. Type something:")
+    print("Assistant:👋 Hello! I'm your assistant. How can I help you today?")
     
+    chat_history = []
+
     while True:
-        user_input = input("> ")
-        response = get_response(user_input)
-        print(response)
-        
-        if response.startswith("Goodbye"):
+        user_input = input("\nYou: ").strip()
+
+        if user_input.lower() in ["exit", "quit"]:
             break
+
+        response = handle_custom_commands(user_input)
+
+        if response is None:
+            # Let LLM handle it
+            response, chat_history = ask_llm_local(user_input, chat_history)
+
+        print(f"\nAssistant: {response}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)

@@ -4,6 +4,7 @@ import requests
 from datetime import datetime
 import dateparser
 import re
+import argparse
 
 # Load environment variables
 load_dotenv()
@@ -69,6 +70,32 @@ def get_todays_todo():
     formatted_tasks = "\n".join(task.strip() for task in tasks)
     return f"Here's your todo list for today ({today}):\n{formatted_tasks}"
 
+def get_daily_briefing(city=""):
+    print("\n🌅 Daily Briefing 🌅")
+    print("--------------------")
+
+    # Show weather
+    if city: 
+        weather = get_weather(city)
+        print(f"\nWeather today in {city.title()}: \n{weather}")
+    else:
+        print("Weather not set")
+
+    # Show today's todo list
+    todo = get_todays_todo()
+    print(f"\nToday's To-Do List: \n{todo}\n")
+
+def save_city_preference(city):
+    with open("config.txt", "w") as f:
+        f.write(city.strip())
+
+def load_city_preference():
+    try:
+        with open("config.txt", 'r') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return ""
+        
 
 def get_response(command):
     command = command.lower()
@@ -99,8 +126,39 @@ def get_response(command):
         return "Goodbye! Have a great day!"
     else:
         return "I'm not sure how to respond to that."
+    
+
+def print_help():
+    help_text = """
+Virtual Assistant Help Guide
+----------------------------
+
+You can interact with the assistant using natural language. Here are some things you can do:
+
+🗣️ General Commands:
+  - What's the weather in <city>?
+  - Tell me the weather for today in <city>
+
+📝 To-Do List Commands:
+  - Add <task> to my todo list
+    (e.g., add walk the dog to my todo list)
+
+More features coming soon...
+
+To display this help guide:
+  python assistant.py --help
+"""
+
+    print(help_text)
 
 def main():
+    city = load_city_preference()
+    if not city:
+        city = input("🌆 What city should I use for your weather updates? ").strip()
+        save_city_preference(city)
+
+    get_daily_briefing(city)
+
     print("👋 Hello! I'm your assistant. Type something:")
     
     while True:
@@ -112,5 +170,13 @@ def main():
             break
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument("--help", action="store_true")
+    args = parser.parse_args()
+
+    if args.help:
+        print_help()
+        exit()
+
     main()
 

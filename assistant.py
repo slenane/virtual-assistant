@@ -68,31 +68,34 @@ def get_todays_todo():
     todo_file = os.path.join(todo_dir, f"{today}.txt")
 
     if not os.path.exists(todo_file):
-        return "You have no tasks on you todo list for today."
+        return "\nYou have no tasks on you todo list for today."
     
     with open(todo_file, 'r') as f:
         tasks = f.readlines()
 
     if not tasks:
-        return "Your todo list is empty for today"
+        return "\nYour todo list is empty for today"
     
     formatted_tasks = "\n".join(task.strip() for task in tasks)
     return f"Here's your todo list for today ({today}):\n{formatted_tasks}"
 
 def get_daily_briefing(city=""):
-    print("\n🌅 Daily Briefing 🌅")
-    print("--------------------")
+    briefing = ""
+    briefing += "\n🌅 Daily Briefing 🌅"
+    briefing += "\n--------------------"
 
     # Show weather
     if city: 
         weather = get_weather(city)
-        print(f"\nWeather today in {city.title()}: \n{weather}")
+        briefing += f"\n\nWeather today in {city.title()}: \n{weather}"
     else:
-        print("Weather not set")
+        briefing += "\nWeather not set"
 
     # Show today's todo list
     todo = get_todays_todo()
-    print(f"\nToday's To-Do List: \n{todo}\n")
+    briefing += f"\n\nToday's To-Do List: \n{todo}\n"
+
+    return briefing
 
 def save_city_preference(city):
     with open("config.txt", "w") as f:
@@ -156,16 +159,20 @@ To display this help guide:
 
     print(help_text)
 
-def main():
+def get_city_preference():
     city = load_city_preference()
     if not city:
         city = input("🌆 What city should I use for your weather updates? ").strip()
         save_city_preference(city)
+    return city
 
-    get_daily_briefing(city)
+def get_greeting():
+    briefing = get_daily_briefing(get_city_preference())
+    initial_message = "\nAssistant:👋 Hello! I'm your assistant. How can I help you today?"
+    return briefing + initial_message
 
-    print("Assistant:👋 Hello! I'm your assistant. How can I help you today?")
-    
+def main():
+    print(get_greeting())
     chat_history = []
 
     while True:

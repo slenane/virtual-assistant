@@ -1,83 +1,7 @@
-import os
-from dotenv import load_dotenv
-import requests
-from datetime import datetime
-import dateparser
 import re
 import argparse
-import ollama
 
-# Load environment variables
-load_dotenv()
-
-# OpenWeatherMap API Key
-API_KEY = os.getenv("OPENWEATHER_API_KEY")
-
-def ask_llm_local(prompt, history=[]):
-    response = ollama.chat(
-        model='llama3',
-        messages=history + [{'role': "user", "content": prompt}]
-    )
-    answer = response['message']['content']
-    return answer, history + [{"role": "assistant", "content": answer}]
-
-def get_weather(city):
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
-
-    try:
-        response = requests.get(url)
-        data = response.json()
-
-        if data['cod'] != 200:
-            return f"Sorry, I could not find weather for '{city}'."
-        
-        weather = data["weather"][0]["description"]
-        temp = data["main"]["temp"]
-        feels_like = data["main"]["feels_like"]
-
-        return f"In {city.title()}, it's currently {weather} with a temperature of {temp}°C (feels like {feels_like}°C)."
-    except Exception as e:
-        return f"Something went wrong: {e}"
-    
-def add_to_todo(task, date_str=None):
-    # Create todos folder if it doesn't exist
-    todo_dir = "todos"
-    os.makedirs(todo_dir, exist_ok=True)
-
-    # Default to today if no date provided
-    if date_str:
-        parsed_date = dateparser.parse(date_str)
-    else:
-        parsed_date = datetime.now()
-
-    if not parsed_date:
-        return "Sorry, I couldn't understand the date you mentioned."
-
-    date_str_formatted = parsed_date.strftime("%Y-%m-%d")
-    todo_file = os.path.join(todo_dir, f"{date_str_formatted}.txt")
-
-    # Append the task to the file
-    with open(todo_file, "a") as f:
-        f.write(f"- {task}\n")
-
-    return f"Task added to your todo list for {date_str_formatted}."
-
-def get_todays_todo():
-    todo_dir = "todos"
-    today = datetime.now().strftime("%Y-%m-%d")
-    todo_file = os.path.join(todo_dir, f"{today}.txt")
-
-    if not os.path.exists(todo_file):
-        return "\nYou have no tasks on you todo list for today."
-    
-    with open(todo_file, 'r') as f:
-        tasks = f.readlines()
-
-    if not tasks:
-        return "\nYour todo list is empty for today"
-    
-    formatted_tasks = "\n".join(task.strip() for task in tasks)
-    return f"Here's your todo list for today ({today}):\n{formatted_tasks}"
+from core import get_weather, get_city_preference,get_todays_todo, add_to_todo, ask_llm_local
 
 def get_daily_briefing(city=""):
     briefing = ""
@@ -96,18 +20,6 @@ def get_daily_briefing(city=""):
     briefing += f"\n\nToday's To-Do List: \n{todo}\n"
 
     return briefing
-
-def save_city_preference(city):
-    with open("config.txt", "w") as f:
-        f.write(city.strip())
-
-def load_city_preference():
-    try:
-        with open("config.txt", 'r') as f:
-            return f.read().strip()
-    except FileNotFoundError:
-        return ""
-        
 
 def handle_custom_commands(command):
     command = command.lower()
@@ -159,12 +71,6 @@ To display this help guide:
 
     print(help_text)
 
-def get_city_preference():
-    city = load_city_preference()
-    if not city:
-        city = input("🌆 What city should I use for your weather updates? ").strip()
-        save_city_preference(city)
-    return city
 
 def get_greeting():
     briefing = get_daily_briefing(get_city_preference())

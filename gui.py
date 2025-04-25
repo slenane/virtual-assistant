@@ -1,19 +1,11 @@
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
-import subprocess
 import threading
-import ollama
-from assistant import handle_custom_commands, ask_llm_local, get_greeting
+from assistant import handle_custom_commands, get_greeting
+from core import log_chat, load_chat_history, ask_llm_local, ensure_ollama_running
 
 chat_history = []
 
-# Check if Ollama is running; if not, start it
-def ensure_ollama_running():
-    try:
-        subprocess.run(["ollama", "list"], check=True, stdout=subprocess.DEVNULL)
-    except subprocess.CalledProcessError:
-        subprocess.Popen(["ollama", "serve"])
-    
 # Run ollama in the background
 ensure_ollama_running()
 
@@ -25,6 +17,7 @@ def run_gui():
         
         entry.delete(0, tk.END)
         chat_log.insert(tk.END, f"\n\nYou: {user_input}\n")
+        log_chat("user", user_input)
     
         def handle_response():
             global chat_history
@@ -33,6 +26,7 @@ def run_gui():
                 response, chat_history = ask_llm_local(user_input, chat_history)
 
             chat_log.insert(tk.END, f"\n\nAssistant: {response}\n")
+            log_chat("assistant", response)
             chat_log.see(tk.END)
         
         threading.Thread(target=handle_response).start()
@@ -43,7 +37,14 @@ def run_gui():
 
     chat_log = ScrolledText(root, wrap=tk.WORD, height=40, width=120)
     chat_log.pack(padx=10, pady=10)
-    chat_log.insert(tk.END, get_greeting())
+    
+    todays_log = load_chat_history()
+    
+    if len(todays_log):
+        for message in todays_log:
+            chat_log.insert(tk.END, f"\n\n{message['message']}\n")
+    else:
+        chat_log.insert(tk.END, get_greeting())
 
     entry = tk.Entry(root, width=50)
     entry.pack(padx=10, pady=(0,10))

@@ -1,7 +1,7 @@
 import re
 import argparse
 
-from core import get_weather, get_city_preference,get_todays_todo, add_to_todo, ask_llm_local
+from core import get_weather, get_city_preference,get_todays_todo, add_to_todo, ask_llm_local, get_todays_events
 
 def get_daily_briefing(city=""):
     briefing = ""
@@ -14,6 +14,12 @@ def get_daily_briefing(city=""):
         briefing += f"\n\nWeather today in {city.title()}: \n{weather}"
     else:
         briefing += "\nWeather not set"
+
+    # Show google calendar events
+    events = get_todays_events()
+    briefing += "\n\nToday's Google Calendar Events:"
+    for event in events:
+        briefing += f"\n{event}"
 
     # Show today's todo list
     todo = get_todays_todo()

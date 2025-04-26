@@ -4,3 +4,5 @@ __pycache__/
 *.pyc
 todos
 logs
+credentials.json
+token.json

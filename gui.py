@@ -1,6 +1,7 @@
-import tkinter as tk
-from tkinter.scrolledtext import ScrolledText
+import sys
 import threading
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTextEdit, QLineEdit, QPushButton
+from PySide6.QtCore import Signal, QObject, QThread
 from assistant import handle_custom_commands, get_greeting
 from core import log_chat, load_chat_history, ask_llm_local, ensure_ollama_running
 
@@ -9,51 +10,91 @@ chat_history = []
 # Run ollama in the background
 ensure_ollama_running()
 
-def run_gui():
-    def send():
-        user_input = entry.get()
-        if not user_input.strip():
-            return
-        
-        entry.delete(0, tk.END)
-        chat_log.insert(tk.END, f"\n\nYou: {user_input}\n")
-        log_chat("user", user_input)
+# Define a signal handler to fix threading issue when using an LLM
+class Worker(QObject):
+    finished = Signal(str)
+
+    def __init__(self, user_input, chat_history):
+        super().__init__()
+        self.user_input = user_input
+        self.chat_history = chat_history
     
-        def handle_response():
-            global chat_history
-            response = handle_custom_commands(user_input)
-            if response is None:
-                response, chat_history = ask_llm_local(user_input, chat_history)
+    def run(self):
+        response = handle_custom_commands(self.user_input)
 
-            chat_log.insert(tk.END, f"\n\nAssistant: {response}\n")
-            log_chat("assistant", response)
-            chat_log.see(tk.END)
-        
-        threading.Thread(target=handle_response).start()
+        if response is None:
+            response, self.chat_history = ask_llm_local(self.user_input, self.chat_history)
+
+        self.finished.emit(response)
+
+class VirtualAssistantApp(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Set up the window
+        self.setWindowTitle("Virtual Assistant")
+        self.setGeometry(100, 100, 800, 600)
+
+        # Layout
+        self.layout = QVBoxLayout(self)
+
+        # Chat log area (QTextEdit)
+        self.chat_log = QTextEdit(self)
+        self.chat_log.setReadOnly(True)  # Make it read-only so user can't type directly here
+        self.layout.addWidget(self.chat_log)
+
+        # User input field (QLineEdit)
+        self.input_field = QLineEdit(self)
+        self.layout.addWidget(self.input_field)
+
+        # Send button
+        self.send_button = QPushButton("Send", self)
+        self.layout.addWidget(self.send_button)
+
+        # Connect send button to action
+        self.send_button.clicked.connect(self.on_send)
+
+        # Always show the greeting
+        self.chat_log.append(get_greeting())
+
+        # Load today's chat history
+        todays_log = load_chat_history()
+
+        # If there's chat history, display it, otherwise show a greeting
+        if len(todays_log):
+            for message in todays_log:
+                self.chat_log.append(message['message'])
+
+    def on_send(self):
+        global chat_history
+        # Get the user input and display it
+        user_input = self.input_field.text()
+        if user_input.strip():
+            self.chat_log.append(f"\n\nYou: {user_input}")
+            log_chat("user", user_input)
+            self.input_field.clear()
+
+            # Create a worker thread
+            self.worker = Worker(user_input, chat_history)
+            self.thread = QThread()
+            self.worker.moveToThread(self.thread)
+
+            self.thread.started.connect(self.worker.run)
+            self.worker.finished.connect(self.handle_response)  # <- FIX: connect worker's finished signal
+            self.worker.finished.connect(self.thread.quit)
+            self.worker.finished.connect(self.worker.deleteLater)
+            self.thread.finished.connect(self.thread.deleteLater)
+
+            self.thread.start()
 
 
-    root = tk.Tk()
-    root.title("Virtual Assistant")
-
-    chat_log = ScrolledText(root, wrap=tk.WORD, height=40, width=120)
-    chat_log.pack(padx=10, pady=10)
-    
-    todays_log = load_chat_history()
-    
-    if len(todays_log):
-        for message in todays_log:
-            chat_log.insert(tk.END, f"\n\n{message['message']}\n")
-    else:
-        chat_log.insert(tk.END, get_greeting())
-
-    entry = tk.Entry(root, width=50)
-    entry.pack(padx=10, pady=(0,10))
-    entry.bind("<Return>", lambda event: send())
-
-    send_btn = tk.Button(root, text="Send", command=send)
-    send_btn.pack(pady=(0, 10))
-
-    root.mainloop()
+    # Handle assistants response asynchronously 
+    def handle_response(self, response):
+        self.chat_log.append(f"Assistant: {response}")
+        log_chat("assistant", response)
 
 if __name__ == "__main__":
-    run_gui()
+    app = QApplication(sys.argv)
+    window = VirtualAssistantApp()
+    window.show()
+    sys.exit(app.exec())

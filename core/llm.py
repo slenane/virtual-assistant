@@ -1,5 +1,6 @@
 import ollama
 import subprocess
+import markdown
 
 # Check if Ollama is running; if not, start it
 def ensure_ollama_running():
@@ -13,5 +14,5 @@ def ask_llm_local(prompt, history=[]):
         model='llama3',
         messages=history + [{'role': "user", "content": prompt}]
     )
-    answer = response['message']['content']
+    answer = markdown.markdown(response['message']['content'])
     return answer, history + [{"role": "assistant", "content": answer}]

@@ -18,12 +18,17 @@ def get_daily_briefing(city=""):
     # Show google calendar events
     events = get_todays_events()
     briefing += "\n\nToday's Google Calendar Events:"
-    for event in events:
-        briefing += f"\n{event}"
+    if len(events): 
+        for event in events:
+            briefing += f"\n{event}"
+    else: 
+        briefing += f"\n\nNo calendar events today"
 
     # Show today's todo list
     todo = get_todays_todo()
     briefing += f"\n\nToday's To-Do List: \n{todo}\n"
+
+    briefing += "\n--------------------"
 
     return briefing
 

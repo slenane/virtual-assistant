@@ -54,6 +54,9 @@ class VirtualAssistantApp(QWidget):
         # Connect send button to action
         self.send_button.clicked.connect(self.on_send)
 
+        # Connect Enter/Return key in QLineEdit to trigger the button
+        self.input_field.returnPressed.connect(self.send_button.click)
+
         # Always show the greeting
         self.chat_log.append(get_greeting())
 
@@ -71,7 +74,7 @@ class VirtualAssistantApp(QWidget):
         user_input = self.input_field.text()
         if user_input.strip():
             self.chat_log.append(f"\n\nYou: {user_input}")
-            log_chat("user", user_input)
+            log_chat("You", user_input)
             self.input_field.clear()
 
             # Create a worker thread
@@ -90,8 +93,8 @@ class VirtualAssistantApp(QWidget):
 
     # Handle assistants response asynchronously 
     def handle_response(self, response):
-        self.chat_log.append(f"Assistant: {response}")
-        log_chat("assistant", response)
+        self.chat_log.append(f"\n\nAssistant: {response}")
+        log_chat("Assistant", response)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

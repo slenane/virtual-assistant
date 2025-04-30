@@ -17,7 +17,7 @@ def run_gui():
         
         entry.delete(0, tk.END)
         chat_log.insert(tk.END, f"\n\nYou: {user_input}\n")
-        log_chat("user", user_input)
+        log_chat("You", user_input)
     
         def handle_response():
             global chat_history
@@ -26,7 +26,7 @@ def run_gui():
                 response, chat_history = ask_llm_local(user_input, chat_history)
 
             chat_log.insert(tk.END, f"\n\nAssistant: {response}\n")
-            log_chat("assistant", response)
+            log_chat("Assistant", response)
             chat_log.see(tk.END)
         
         threading.Thread(target=handle_response).start()

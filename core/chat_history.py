@@ -12,7 +12,7 @@ def log_chat(role,message):
 
     # Timestamp the message
     timestamp = datetime.now().strftime("%H:%M:%S")
-    log_line = f"[{timestamp}] {role.upper()}: {message}\n"
+    log_line = f"[{timestamp}] {role}: {message}\n"
 
     # Append message to the daily log file
     with open(log_file, "a", encoding="utf-8") as f:

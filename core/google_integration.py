@@ -1,18 +1,17 @@
-from __future__ import print_function
-import datetime
-import os.path
-
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+import datetime
+import os.path
+from dateutil import parser
 
 # If modifying these SCOPES, delete the file token.json
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+SCOPES = ['https://www.googleapis.com/auth/calendar']
 credentials_path = './credentials.json'
 token_path = './token.json'
 
-def get_todays_events():
+def get_calendar_service():
     creds = None
     if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
@@ -28,7 +27,11 @@ def get_todays_events():
         with open(token_path, 'w') as token:
             token.write(creds.to_json())
     
-    service = build('calendar', 'v3', credentials=creds)
+    return build('calendar', 'v3', credentials=creds)
+
+
+def get_todays_events():
+    service = get_calendar_service()
 
     now = datetime.datetime.utcnow()
     start_of_day = now.replace(hour=0, minute=0, second=0,microsecond=0).isoformat() + 'Z'
@@ -57,3 +60,26 @@ def get_todays_events():
 
 
     return todays_events
+
+def create_calendar_event(summary, start, end):
+    event = {
+        'summary': summary.capitalize(),
+        'start': {
+            'dateTime': start,
+            'timeZone': "Europe/Rome"
+        },
+        'end': {
+            'dateTime': end,
+            'timeZone': "Europe/Rome"
+        },
+    }
+
+    try:
+        service = get_calendar_service()
+        service.events().insert(calendarId='primary', body=event).execute()
+
+        start_dt = parser.isoparse(start)
+        end_dt = parser.isoparse(end)
+        return f"Event scheduled: '{summary.capitalize()}' from {start_dt.strftime('%I:%M %p')} to {end_dt.strftime('%I:%M %p')} on {start_dt.strftime('%A')}"
+    except Exception as e:
+        return f"Failed to create event: {e}"

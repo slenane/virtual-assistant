@@ -1,7 +1,5 @@
-import re
 import argparse
-
-from core import get_weather, get_city_preference,get_todays_todo, add_to_todo, ask_llm_local, get_todays_events
+from core import get_weather, get_city_preference, ask_llm_local, get_todays_events
 
 def get_daily_briefing(city=""):
     briefing = ""
@@ -24,9 +22,6 @@ def get_daily_briefing(city=""):
     else: 
         briefing += f"\n\nNo calendar events today"
 
-    # Show today's todo list
-    todo = get_todays_todo()
-    briefing += f"\n\nToday's To-Do List: \n{todo}\n"
 
     briefing += "\n--------------------"
 
@@ -34,26 +29,12 @@ def get_daily_briefing(city=""):
 
 def handle_custom_commands(command):
     command = command.lower()
-    
     if "weather in" in command:
         city = command.split("weather in")[-1].strip()
         if city:
             return get_weather(city)
         else:
             return "Please specify a city."
-        
-    elif command.lower().startswith("add ") and "todo list" in command.lower():
-        match = re.match(r"add (.+) to my todo list(?: for (.+))?", command.lower())
-
-        if match:
-            task = match.group(1).strip()
-            date_str = match.group(2).strip() if match.group(2) else None
-            return add_to_todo(task, date_str)
-        else:
-            return "Sorry, I couldn't understand that task"
-        
-    elif "what's on my todo list" in command.lower() or "show my todo list" in command.lower():
-        return get_todays_todo()
     
     # Fallback - trigger LLM chat
     return None

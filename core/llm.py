@@ -2,6 +2,7 @@ import ollama
 import subprocess
 import markdown
 import datetime
+from zoneinfo import ZoneInfo
 import re
 import json
 from .google_integration import create_calendar_event
@@ -14,7 +15,9 @@ def ensure_ollama_running():
         subprocess.Popen(["ollama", "serve"])
 
 def ask_llm_local(prompt, history=[]):
-    today_date_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    now = datetime.datetime.now(ZoneInfo("Europe/Rome"))
+    today_date_time = now.strftime("%Y-%m-%d %H:%M:%S %Z%z")
+
     prompt = f"""
     You are a smart assistant. Your task is to decide if the user is trying to create a calendar event. If they are, extract the event details. Otherwise, respond normally.
 

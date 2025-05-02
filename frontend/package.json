@@ -2,6 +2,10 @@
   "name": "virtual-assistant",
   "version": "1.0.0",
   "main": "main.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "scripts": {
     "start": "electron ."
   },

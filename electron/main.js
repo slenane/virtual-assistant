@@ -3,14 +3,15 @@ const path = require("path");
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 600,
+    height: 800,
     webPreferences: {
+      contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
     },
   });
 
-  win.loadFile("renderer/index.html");
+  win.loadURL(`http://localhost:3000`);
 };
 
 app.whenReady().then(createWindow);

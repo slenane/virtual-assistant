@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./tailwind.css";
 import WeatherCard from "./components/WeatherCard";
-import EventCard from "./components/CalendarCard";
+import EventCard from "./components/EventCard";
 
 const App = () => {
   const [input, setInput] = useState("");
@@ -42,7 +42,9 @@ const App = () => {
     <div className="p-4">
       <h1 className="text-xl font-bold mb-4">Virtual Assistant</h1>
       {weather && <WeatherCard weather={weather} />}
-      {events.length > 0 && <EventCard events={events} />}
+      <div className="grid gap-4">
+        {events.length > 0 && <EventCard events={events} />}
+      </div>
       <input
         type="text"
         value={input}

@@ -64,7 +64,7 @@ def ask_llm_local(prompt, history=[]):
             title = parsed.get("title")
             start_time = parsed.get("start_time")
             end_time = parsed.get("end_time")
-            answer = markdown.markdown( create_calendar_event(title, start_time, end_time))
+            answer = markdown.markdown(create_calendar_event(title, start_time, end_time))
         
         else:
             answer = markdown.markdown(parsed.get("response"))

@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from "react";
 import "./tailwind.css";
+import WeatherCard from "./components/WeatherCard";
+import EventCard from "./components/CalendarCard";
 
 const App = () => {
   const [input, setInput] = useState("");
-  const [greeting, setGreeting] = useState("");
+  const [events, setEvents] = useState("");
+  const [weather, setWeather] = useState("");
 
   useEffect(() => {
     const initApp = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/init");
         const data = await res.json();
-        if (data.response) {
-          setGreeting(data.response);
-        }
+        console.log(data);
+        if (data.weather) setWeather(data.weather);
+        if (data.events) setEvents(data.events);
       } catch (error) {
         console.error("Init error:", error);
       }
@@ -37,7 +40,9 @@ const App = () => {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">{greeting}</h1>
+      <h1 className="text-xl font-bold mb-4">Virtual Assistant</h1>
+      {weather && <WeatherCard weather={weather} />}
+      {events.length > 0 && <EventCard events={events} />}
       <input
         type="text"
         value={input}

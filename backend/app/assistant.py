@@ -74,6 +74,13 @@ def get_greeting():
     initial_message = "\nAssistant:👋 Hello! I'm your assistant. How can I help you today?"
     return briefing + initial_message
 
+def initialize_assistant(): 
+    weather = get_weather(get_city_preference())
+    events = get_todays_events()
+
+    return {"weather": weather, "events": events}
+
+
 def main():
     print(get_greeting())
     chat_history = []

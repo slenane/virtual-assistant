@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+*.pyc
+app/todos
+app/logs
+config/google_integrations/credentials.json
+config/google_integrations/token.json

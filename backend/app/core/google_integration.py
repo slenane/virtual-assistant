@@ -8,8 +8,8 @@ from dateutil import parser
 
 # If modifying these SCOPES, delete the file token.json
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-credentials_path = './credentials.json'
-token_path = './token.json'
+credentials_path = 'config/google_integrations/credentials.json'
+token_path = 'config/google_integrations/token.json'
 
 def get_calendar_service():
     creds = None

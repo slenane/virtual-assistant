@@ -1,5 +1,10 @@
 import argparse
-from core import get_weather, get_city_preference, ask_llm_local, get_todays_events
+from .core import get_weather, get_city_preference, ensure_ollama_running, ask_llm_local, get_todays_events
+
+
+# Run ollama in the background
+ensure_ollama_running()
+
 
 def get_daily_briefing(city=""):
     briefing = ""

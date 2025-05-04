@@ -1,6 +1,16 @@
 from flask import Flask, request, jsonify
+from app.assistant import handle_custom_commands, get_greeting
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+
+@app.route("/api/init", methods=["GET"])
+def init():
+    greeting = get_greeting()
+    print(greeting)
+
+    return jsonify({"response": greeting})
 
 @app.route("/api/ask", methods=["POST"])
 def ask():

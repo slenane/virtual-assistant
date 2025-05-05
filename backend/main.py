@@ -5,9 +5,14 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/api/init", methods=["GET"])
+@app.route("/api/init", methods=["POST"])
 def init():
-    assistant_data = initialize_assistant()
+    data = request.get_json()
+    coords = {
+        'lat': data.get('latitude'),
+        'lon': data.get('longitude')
+    }
+    assistant_data = initialize_assistant(coords)
     print(assistant_data)
 
     return jsonify(assistant_data)

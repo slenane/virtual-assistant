@@ -74,8 +74,8 @@ def get_greeting():
     initial_message = "\nAssistant:👋 Hello! I'm your assistant. How can I help you today?"
     return briefing + initial_message
 
-def initialize_assistant(): 
-    weather = get_weather(get_city_preference())
+def initialize_assistant(coords): 
+    weather = get_weather(coords)
     events = get_todays_events()
 
     return {"weather": weather, "events": events}

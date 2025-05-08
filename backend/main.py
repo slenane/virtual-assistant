@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from app.assistant import handle_custom_commands, initialize_assistant
+from app.assistant import  handle_user_input, initialize_assistant
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -21,10 +21,12 @@ def init():
 def ask():
     data = request.json
     user_input = data.get("message", "")
+    print(user_input)
 
     # Process your virtual assistant logic here
-    response = f"You said: {user_input}"
-    return jsonify({"response": response})
+    response = handle_user_input(user_input)
+    print(response)
+    return jsonify(response)
 
 if __name__ == "__main__":
     app.run(port=5000)

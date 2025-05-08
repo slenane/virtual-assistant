@@ -51,7 +51,6 @@ def ask_llm_local(prompt, history=[]):
     match = re.search(r'({.*})', answer, re.DOTALL)
 
 
-    print(match)
     if match:
         # Get the matched JSON string
         json_str = match.group(1)

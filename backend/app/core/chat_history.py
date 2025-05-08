@@ -18,6 +18,12 @@ def log_chat(role,message):
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(log_line)
 
+    return {
+        "timestamp": timestamp,
+        "role": role,
+        "message": message
+    }
+
 def load_chat_history():
     messages = []
     # Get today's date in YYYY-MM-DD format
@@ -31,14 +37,19 @@ def load_chat_history():
         with open(file_path, "r") as file:
             log_data = file.read()
 
-            # Regex pattern to match time and the message
-            pattern = r"\[(\d{2}:\d{2}:\d{2})\] (.*?)(?=\[\d{2}:\d{2}:\d{2}\]|$)"
+            # Regex pattern to match [HH:MM:SS] Role: message
+            pattern = r"\[(\d{2}:\d{2}:\d{2})\] (.*?): (.*?)(?=\[\d{2}:\d{2}:\d{2}\]|$)"
             matches = re.findall(pattern, log_data, re.DOTALL)
 
-            for time, message in matches:
-                # Combine the date from the file with the time from the message to create a full timestamp
-                timestamp = f"{date} {time}"
-                messages.append({"timestamp": timestamp, "message": message.strip()})
-    
+            for time, role, content in matches:
+                timestamp = time
+                role = role.lower().strip()
+                content = content.strip()
+
+                messages.append({
+                    "timestamp": timestamp,
+                    "role": role,
+                    "message": content
+                })
     
     return messages

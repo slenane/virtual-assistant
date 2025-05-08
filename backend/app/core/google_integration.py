@@ -52,9 +52,12 @@ def get_todays_events():
         end = event['end'].get('dateTime')
 
         try:
-            start_time = datetime.datetime.fromisoformat(start).strftime("%H:%M")
-            end_time = datetime.datetime.fromisoformat(end).strftime("%H:%M")
-            todays_events.append(f"{start_time} to {end_time} - {event.get('summary', 'No Title')}")
+            event = {
+                "start_time": datetime.datetime.fromisoformat(start).strftime("%H:%M"),
+                "end_time": datetime.datetime.fromisoformat(end).strftime("%H:%M"),
+                "summary": event.get('summary', 'No Title')
+            }
+            todays_events.append(event)
         except:
             todays_events.append(f"All day - {event.get('summary', 'No Title')}")
 

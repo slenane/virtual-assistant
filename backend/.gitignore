@@ -2,7 +2,6 @@
 venv/
 __pycache__/
 *.pyc
-app/todos
-app/logs
+logs
 config/google_integrations/credentials.json
 config/google_integrations/token.json

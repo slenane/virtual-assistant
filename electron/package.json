@@ -8,10 +8,28 @@
   "description": "",
   "scripts": {
     "start": "concurrently \"npm run electron\" \"cd ../frontend && npm start\"",
+    "build": "electron-builder",
     "electron": "electron ."
+  },
+  "build": {
+    "appId": "com.virtual.assistant",
+    "productName": "VirtualAssistant",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "frontend/build/**/*",
+      "../backend/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
-    "electron": "^27.0.0"
+    "electron": "^27.0.0",
+    "electron-builder": "^26.0.12"
   }
 }

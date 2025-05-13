@@ -9,7 +9,7 @@ load_dotenv()
 API_KEY = os.getenv("OPENWEATHER_API_KEY")
 
 def get_weather(coords):
-    url = f"http://api.openweathermap.org/data/2.5/weather?lat={coords["lat"]}&lon={coords["lon"]}&appid={API_KEY}&units=metric"
+    url = f"http://api.openweathermap.org/data/2.5/weather?lat={coords['lat']}&lon={coords['lon']}&appid={API_KEY}&units=metric"
 
     try:
         response = requests.get(url)

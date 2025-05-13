@@ -7,6 +7,7 @@ CORS(app)
 
 @app.route("/api/init", methods=["POST"])
 def init():
+    print("INIT")
     data = request.get_json()
     coords = {
         'lat': data.get('latitude'),
@@ -19,6 +20,7 @@ def init():
 
 @app.route("/api/ask", methods=["POST"])
 def ask():
+    print("ASK")
     data = request.json
     user_input = data.get("message", "")
     print(user_input)
@@ -29,4 +31,5 @@ def ask():
     return jsonify(response)
 
 if __name__ == "__main__":
+    print("running")
     app.run(port=5000)
